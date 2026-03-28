@@ -234,29 +234,52 @@ async function handleTranscription(
       // Append timezone offset to treat as local time (assume US Eastern = UTC-4)
       scheduledAt = new Date(`${appointmentDate}T${timeStr}:00-04:00`)
     } else if (typeof reservationDetails === 'string' && reservationDetails) {
-      // Parse from reservation details like "April 2nd at 3:00 PM for five people"
+      // Parse from reservation details — handles both "April 2nd" and "March twenty-ninth"
       try {
-        const dateMatch = reservationDetails.match(/(\w+)\s+(\d+)(?:st|nd|rd|th)?/i)
-        const timeMatch = reservationDetails.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i)
+        // Convert word numbers to digits
+        const wordToNum: Record<string, string> = {
+          'first': '1', 'second': '2', 'third': '3', 'fourth': '4', 'fifth': '5',
+          'sixth': '6', 'seventh': '7', 'eighth': '8', 'ninth': '9', 'tenth': '10',
+          'eleventh': '11', 'twelfth': '12', 'thirteenth': '13', 'fourteenth': '14',
+          'fifteenth': '15', 'sixteenth': '16', 'seventeenth': '17', 'eighteenth': '18',
+          'nineteenth': '19', 'twentieth': '20', 'twenty-first': '21', 'twenty-second': '22',
+          'twenty-third': '23', 'twenty-fourth': '24', 'twenty-fifth': '25',
+          'twenty-sixth': '26', 'twenty-seventh': '27', 'twenty-eighth': '28',
+          'twenty-ninth': '29', 'thirtieth': '30', 'thirty-first': '31',
+          'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
+          'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
+          'eleven': '11', 'twelve': '12',
+        }
+
+        let details = reservationDetails.toLowerCase()
+        for (const [word, num] of Object.entries(wordToNum)) {
+          details = details.replace(new RegExp(`\\b${word}\\b`, 'gi'), num)
+        }
+
+        // Match "Month Day" pattern
+        const dateMatch = details.match(/(\w+)\s+(\d+)(?:st|nd|rd|th)?/i)
+        // Match time — "6 PM", "6:00 PM", "3 PM"
+        const timeMatch = details.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i)
+
         if (dateMatch) {
-          const month = dateMatch[1]
+          const month = dateMatch[1]!.charAt(0).toUpperCase() + dateMatch[1]!.slice(1)
           const day = dateMatch[2]
           const year = new Date().getFullYear()
           let hours = timeMatch ? parseInt(timeMatch[1]!) : 12
-          const minutes = timeMatch ? timeMatch[2] : '00'
+          const minutes = timeMatch && timeMatch[2] ? timeMatch[2] : '00'
           const ampm = timeMatch ? timeMatch[3]!.toUpperCase() : 'PM'
           if (ampm === 'PM' && hours < 12) hours += 12
           if (ampm === 'AM' && hours === 12) hours = 0
-          // Store with timezone offset so it displays correctly
+
           const dateStr = `${month} ${day}, ${year} ${hours.toString().padStart(2, '0')}:${minutes}`
           const parsed = new Date(dateStr)
           if (!isNaN(parsed.getTime())) {
-            // Adjust: treat as local time (UTC-4 for EDT)
+            // Treat as local time (UTC-4 for EDT)
             scheduledAt = new Date(parsed.getTime() + 4 * 60 * 60 * 1000)
           }
         }
       } catch {
-        // Failed to parse — skip appointment
+        console.error('[Webhook] Failed to parse reservation details:', reservationDetails)
       }
     }
 
