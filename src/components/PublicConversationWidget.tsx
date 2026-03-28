@@ -74,11 +74,10 @@ function ConversationInner({ ownerId, agentPrompt, agentFirstMessage }: { ownerI
         },
       } : undefined
 
-      // Use signedUrl with overrides for per-owner customization
-      console.log('[AushVoice] Starting session with overrides:', overrides ? 'yes' : 'no')
+      // Test: signedUrl WITHOUT overrides to see if connection stays
+      console.log('[AushVoice] Starting session (no overrides test)')
       await conversation.startSession({
         signedUrl,
-        ...(overrides ? { overrides } : {}),
       })
       console.log('[AushVoice] Session started')
     } catch (err) {
