@@ -74,13 +74,11 @@ function ConversationInner({ ownerId, agentPrompt, agentFirstMessage }: { ownerI
         },
       } : undefined
 
-      // Use agentId without overrides (overrides cause errors with agentId mode)
-      // The base agent prompt in ElevenLabs should be generic
-      // Owner customization will come from dynamic variables in future
-      const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID || 'agent_2201kmr9kqmmedkv8dyt8y5qgve6'
-      console.log('[AushVoice] Starting session')
+      // Use signedUrl with overrides for per-owner customization
+      console.log('[AushVoice] Starting session with overrides:', overrides ? 'yes' : 'no')
       await conversation.startSession({
-        agentId,
+        signedUrl,
+        ...(overrides ? { overrides } : {}),
       })
       console.log('[AushVoice] Session started')
     } catch (err) {
