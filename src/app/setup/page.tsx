@@ -128,7 +128,7 @@ export default function SetupPage() {
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Username *</label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-neutral-400">aushvoice.com/c/</span>
+                  <span className="text-sm text-neutral-400">{typeof window !== 'undefined' ? window.location.host : ''}/c/</span>
                   <input
                     type="text"
                     value={username}
@@ -205,7 +205,7 @@ export default function SetupPage() {
 
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/5">
                 <p className="font-mono text-sm font-semibold text-amber-700 dark:text-amber-400">
-                  aushvoice.com/c/{username}
+                  {typeof window !== 'undefined' ? window.location.host : ''}/c/{username}
                 </p>
               </div>
 
