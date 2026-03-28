@@ -5,7 +5,7 @@ import { useState, useCallback, useRef } from 'react'
 
 type Status = 'idle' | 'connecting' | 'active' | 'ended'
 
-function ConversationInner({ ownerId, agentPrompt, agentFirstMessage }: { ownerId: string; agentPrompt?: string | null; agentFirstMessage?: string | null }) {
+function ConversationInner({ ownerId }: { ownerId: string }) {
   const [status, setStatus] = useState<Status>('idle')
   const [elapsed, setElapsed] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -52,32 +52,11 @@ function ConversationInner({ ownerId, agentPrompt, agentFirstMessage }: { ownerI
     setStatus('connecting')
 
     try {
-      // Get signed URL
-      const urlRes = await fetch(`/api/elevenlabs/public-signed-url?owner=${ownerId}`)
-      if (!urlRes.ok) {
-        const errBody = await urlRes.text()
-        console.error('[AushVoice] Signed URL error:', urlRes.status, errBody)
-        throw new Error('Failed to connect')
-      }
-      const { signedUrl } = await urlRes.json()
-      console.log('[AushVoice] Got signed URL, starting session...')
-
-      // Build overrides only if we have a custom prompt
-      const overrides = agentPrompt ? {
-        agent: {
-          prompt: { prompt: agentPrompt },
-          ...(agentFirstMessage ? { firstMessage: agentFirstMessage } : {}),
-        },
-      } : agentFirstMessage ? {
-        agent: {
-          firstMessage: agentFirstMessage,
-        },
-      } : undefined
-
-      // Test: signedUrl WITHOUT overrides to see if connection stays
-      console.log('[AushVoice] Starting session (no overrides test)')
+      // Start session with agentId
+      const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID || 'agent_2201kmr9kqmmedkv8dyt8y5qgve6'
+      console.log('[AushVoice] Starting session')
       await conversation.startSession({
-        signedUrl,
+        agentId,
       })
       console.log('[AushVoice] Session started')
     } catch (err) {
@@ -85,7 +64,7 @@ function ConversationInner({ ownerId, agentPrompt, agentFirstMessage }: { ownerI
       setError(err instanceof Error ? err.message : 'Failed to start')
       setStatus('idle')
     }
-  }, [conversation, ownerId, agentPrompt, agentFirstMessage])
+  }, [conversation, ownerId])
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession()
@@ -164,10 +143,10 @@ function ConversationInner({ ownerId, agentPrompt, agentFirstMessage }: { ownerI
   )
 }
 
-export function PublicConversationWidget({ ownerId, agentPrompt, agentFirstMessage }: { ownerId: string; agentPrompt?: string | null; agentFirstMessage?: string | null }) {
+export function PublicConversationWidget({ ownerId }: { ownerId: string }) {
   return (
     <ConversationProvider>
-      <ConversationInner ownerId={ownerId} agentPrompt={agentPrompt} agentFirstMessage={agentFirstMessage} />
+      <ConversationInner ownerId={ownerId} />
     </ConversationProvider>
   )
 }

@@ -147,11 +147,7 @@ export default function SchedulingPage() {
             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
               Click the button below to start a conversation. {profile.agent_name || 'Our AI assistant'} can answer your questions, help you schedule an appointment, or take a message.
             </p>
-            <PublicConversationWidget
-              ownerId={profile.id}
-              agentPrompt={profile.agent_prompt}
-              agentFirstMessage={profile.agent_first_message}
-            />
+            <PublicConversationWidget ownerId={profile.id} />
           </div>
         </div>
 
