@@ -76,8 +76,10 @@ function ConversationInner({ ownerId, agentPrompt, agentFirstMessage }: { ownerI
 
       // Start session with agentId + overrides for custom prompt
       const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID || 'agent_2201kmr9kqmmedkv8dyt8y5qgve6'
+      console.log('[AushVoice] Starting with overrides:', overrides ? 'yes' : 'no')
       await conversation.startSession({
         agentId,
+        ...(overrides ? { overrides } : {}),
       })
       console.log('[AushVoice] Session started')
     } catch (err) {
